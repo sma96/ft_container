@@ -7,6 +7,8 @@
 #include "iterator.hpp"
 #include "enable_if.hpp"
 #include "reverse_iterator.hpp"
+#include "equal.hpp"
+#include "lexicographical_compare.hpp"
 
 namespace ft{
 
@@ -23,7 +25,7 @@ namespace ft{
             typedef typename allocator_type::pointer         pointer;
             typedef typename allocator_type::const_pointer   const_pointer;
             typedef ft::my_iterator<pointer>                 iterator;
-            typedef ft::my_iterator<const pointer>           const_iterator;
+            typedef ft::my_iterator<const_pointer>           const_iterator;
             typedef ft::reverse_iterator<iterator>           reverse_iterator;
             typedef ft::reverse_iterator<const_iterator>     const_reverse_iterator;
         
@@ -69,6 +71,15 @@ namespace ft{
                 }
             }
 
+            ~vector()
+            {
+                for (size_type i = 0; i < this->_size; i++)
+                {
+                    alloc.destroy(this->p + i);
+                }
+                alloc.deallocate(this->p, this->_capacity);
+            }
+
             template <class InputIterator>
                 vector(InputIterator first, InputIterator last, const allocator_type& _alloc = allocator_type(), 
                         typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
@@ -85,7 +96,7 @@ namespace ft{
                     alloc.deallocate(p, _capacity);
                     this->_size = x._size;
                     this->_capacity = x._capacity;
-                    this->alloc = x.alloc();
+                    this->alloc = x.alloc;
                     this->p = alloc.allocate(this->_capacity);
                     for (size_type i = 0; i < this->_size; i++)
                     {
@@ -125,8 +136,17 @@ namespace ft{
 
             const_reference   front() const
             {
-                std::cout << "const" << std::endl;
                 return (this->front());
+            }
+
+            reference back()
+            {
+                return (this->p[this->_size - 1]);
+            }
+
+            const_reference back() const
+            {
+                return (this->back());
             }
 
             // clear 함수 모든 요소를 지우고 size를 0으로 초기화
@@ -155,19 +175,67 @@ namespace ft{
                 return (this->_size == 0);
             }
 
+            size_type   max_size() const
+            {
+                return (std::min<size_type>((difference_type)alloc.max_size(), std::numeric_limits<difference_type>::max()));
+            }
 
+            void    reserve(size_type new_cap)
+            {
+                if (new_cap > this->_capacity)
+                {
+                    pointer temp = alloc.allocate(new_cap);
+                    size_type   old_size = this->_size;
+                    for (size_type i = 0; i < this->_size; i++)
+                    {
+                        alloc.construct(temp + i, p[i]);
+                    }
+                    this->clear();
+                    this->_size = old_size;
+                    alloc.deallocate(p, this->_capacity);
+                    p = temp;
+                    this->_capacity = new_cap;
+                }
+            }
 
+            void    resize(size_type count, value_type value = value_type())
+            {
+                if (count > this->_size)
+                {
+                    if (this->_capacity <= count)
+                        this->reserve(count * 2);
+                    for (size_type i = this->_size; i < count; i++)
+                    {
+                        alloc.construct(p + i, value);
+                    }
+                    this->_size = count;
+                }
+                else if (count < this->_size)
+                {
+                    for (size_type i = this->_size - 1; i > count; i--)
+                    {
+                        alloc.destroy(p + i);
+                    }
+                    this->_size = count;
+                }
+            }
 
+            // element 추가 , 삭제
+            void    push_back(const value_type& value)
+            {
+                this->resize(this->_size + 1, value);
+            }
 
-
-
-
-
+            void    pop_back()
+            {
+                this->resize(this->_size - 1);
+            }
 
 
             // assign 함수 first부터 last까지의 요소들로 벡터를 만든다.
             template <class InputIterator>
-                void    assign(InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+                void    assign(InputIterator first, InputIterator last, \
+                        typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
                 {
                     size_type new_size = static_cast<size_type>(std::distance(first, last));
                     if (new_size <= 0)
@@ -200,6 +268,7 @@ namespace ft{
                         _capacity = new_capacity;
                     }
                 }
+
                 // n만큼의 value값으로 벡터를 만든다.
             void assign(size_type n, const value_type& value)
             {
@@ -232,12 +301,133 @@ namespace ft{
                 }
             }
 
+            iterator insert(iterator pos, const value_type& value)
+            {
+                size_type dist = static_cast<size_type>(std::distance(this->p, pos.base()));
+                size_type old_cap = this->_capacity;
+                size_type new_size = this->_size + 1;
+
+                if (dist < 0)
+                    throw InvalidSize();
+                else if (dist > this->_size)
+                    throw OutofRange();
+                if (this->_capacity <= this->_size + 1)
+                    this->reserve(this->_capacity * 2);
+                for (size_type i = new_size; i > dist; i--)
+                {
+                    alloc.construct(this->p + i, p[i - 1]);
+                    alloc.destroy(this->p + i - 1);
+                }
+                p[dist] = value;
+                this->_size = new_size;
+                return (iterator(p + dist));
+            }
+
+            void    insert(iterator pos, size_type count, const T& value)
+            {
+                size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
+
+                 if (dist < 0)
+                    throw OutofRange();
+                else if (dist > this->_size)
+                    throw OutofRange();
+                if (this->_capacity <= this->_size + count)
+                    this->reserve(this->_capacity * 2);
+                for (size_type i = 0; i < count; i++)
+                {
+                    this->insert(this->begin() + i, value);
+                }
+
+            }
+            
+            template<class InputIterator>
+                void    insert(iterator pos, InputIterator first, InputIterator last, \
+                            typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+                {
+                    size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
+                    size_type count = static_cast<size_type>(std::distance(first, last));
+                    
+                    if (dist < 0)
+                        throw OutofRange();
+                    else if (dist > this->_size)
+                        throw OutofRange();
+                    if (this->_capacity <= this->_size + count)
+                        this->reserve(this->_capacity * 2);
+                    for (size_type i = 0; i < count; i++)
+                    {
+                        this->insert(this->begin() + dist + i, *first);
+                        first++;
+                    }
+                }
+
+            iterator erase(iterator pos)
+            {
+                size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
+                size_type new_size = this->_size - 1;
+
+                alloc.destroy(p + dist);
+                for (size_type i = dist; i < new_size; i++)
+                {
+                    alloc.construct(p + i, p[i + 1]);
+                    alloc.destroy(p + i + 1);
+                }
+                this->_size = new_size;
+
+                return (iterator(this->begin() + dist));
+            }
+
+            iterator erase(iterator first, iterator last)
+            {
+                size_type dist = static_cast<size_type>(std::distance(this->begin().base(), first.base()));
+                size_type it_dist = static_cast<size_type>(std::distance(first.base(), last.base()));
+
+                for (size_type i = 0; i < it_dist; i++)
+                {
+                    this->erase(first);
+                }
+
+                return (iterator(this->begin() + dist));
+            }
+
+            void    swap(vector& other)
+            {
+                pointer temp_p;
+                size_type temp_size;
+                size_type temp_cap;
+                allocator_type temp_alloc;
+
+                temp_p = other.p;
+                temp_size = other.size();
+                temp_cap = other.capacity();
+                temp_alloc = other.alloc;
+
+                other.p = this->p;
+                other._size = this->_size;
+                other._capacity = this->_capacity;
+                other.alloc = this->alloc;
+
+                this->p = temp_p;
+                this->_size = temp_size;
+                this->_capacity = temp_cap;
+                this->alloc = temp_alloc; 
+            }
+
             iterator begin()
             {
                 return (iterator(this->p));
             }
 
             iterator end()
+            {
+                return (iterator(this->p + this->_size));
+            }
+
+            const iterator begin() const
+            {
+                return (iterator(this->p));
+            }
+
+            const iterator end() const
             {
                 return (iterator(this->p + this->_size));
             }
@@ -272,5 +462,43 @@ namespace ft{
                 return (const_reverse_iterator(this->begin()));
             }
     };
+    template <class T, class Alloc>
+        bool operator==(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return ((lhs.size() == rhs.size()) && ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
+        }
+
+    template <class T, class Alloc>
+        bool operator<(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), lhs.end()));
+        }
+
+    template <class T, class Alloc>
+        bool operator>(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return (rhs < lhs);
+        }
+    template <class T, class Alloc>
+        bool operator!=(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return (!(lhs == rhs));
+        }
+    template <class T, class Alloc>
+        bool operator<=(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return ((lhs < rhs) || (lhs == rhs));
+        }
+    template <class T, class Alloc>
+        bool operator>=(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
+        {
+            return ((lhs > rhs) || (lhs == rhs));
+        }
+    template <class T, class Alloc>
+        void swap(vector<T, Alloc>& lhs, vector<T, Alloc>& rhs)
+        {
+            lhs.swap(rhs);
+        }
+
 };
 #endif

@@ -25,8 +25,8 @@ namespace ft{
         typedef T type;
     };
 
-    template <bool B, class T = void>
-    using enable_if_t = typename enable_if<B, T>::type;
+    // template <bool B, class T = void>
+    // using enable_if_t = typename enable_if<B, T>::type;
 
     template <typename T>
     struct is_integral{

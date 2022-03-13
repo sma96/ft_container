@@ -27,7 +27,7 @@
                 template <typename U>
                 reverse_iterator(const reverse_iterator<U>& iter) : current(iter.base()){}
                 
-                iterator_type base() { return (current); }
+                iterator_type base() const { return (current); }
 
                 template <typename U>
                 reverse_iterator& operator=(const reverse_iterator<U>& iter)

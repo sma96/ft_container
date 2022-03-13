@@ -37,17 +37,17 @@ namespace ft{
                     retunr (*this);
                 }
 
-            reference operator*() {return ( *this->pos); }
-            pointer operator->() {return ( &(this->operator*())); }
-            my_iterator operator+(difference_type n) { return (my_iterator(pos + n)); }
-            my_iterator& operator+=(difference_type n) const { pos += n; return (*this); }
-            my_iterator operator-(difference_type n) { return (my_iterator(pos - n)); }
+            reference operator*() const {return ( *this->pos); }
+            pointer operator->() const {return ( &(this->operator*())); }
+            my_iterator operator+(difference_type n) const { return (my_iterator(pos + n)); }
+            my_iterator& operator+=(difference_type n) { pos += n; return (*this); }
+            my_iterator operator-(difference_type n) const { return (my_iterator(pos - n)); }
             my_iterator& operator-=(difference_type n) const { pos -= n; return (*this); }
-            my_iterator& operator++() const { ++pos; return (*this); }
+            my_iterator& operator++() { ++pos; return (*this); }
             my_iterator operator++(int) { my_iterator tmp(*this); ++pos; return (tmp); }
-            my_iterator& operator--() const { --pos; return (*this); }
+            my_iterator& operator--() { --pos; return (*this); }
             my_iterator operator--(int) { my_iterator tmp(*this); --pos; return (tmp); }
-            reference operator[](difference_type n) { return (*(*this + n)); }
+            reference operator[](difference_type n) const { return (*(*this + n)); }
     };
 
     template <typename iter1, typename iter2>

@@ -1,5 +1,8 @@
-#include <iostream>
+#ifndef PAIR_HPP
+#define PAIR_HPP
 
+#include <iostream>
+#include <memory>
 namespace ft{
 
     template <class T1, class T2>
@@ -21,45 +24,45 @@ namespace ft{
         {
             first = p.first;
             second = p.second;
-            return (*this)
-        };
+            return (*this);
+        }
 
-        template <typename U1, typename U2> 
-        bool operator==(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return (first == p.first && second == p.second);
-        };
 
-        template <typename U1, typename U2>
-        bool operator!=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return !(lhs == rhs)
-        };
+    };
+    template <typename U1, typename U2> 
+    bool operator==(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return (lhs.first == rhs.first && lhs.second == rhs.second);
+    };
 
-        template <typename U1, typename U2>
-        bool operator<(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return (lhs.first < rhs.first || (!(lhs.first < rhs.first) && lhs.second < rhs.second));
-        };
+    template <typename U1, typename U2>
+    bool operator!=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return !(lhs == rhs);
+    };
 
-        template <typename U1, typename U2>
-        bool operator>(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return (rhs < lhs);
-        };
+    template <typename U1, typename U2>
+    bool operator<(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return (lhs.first < rhs.first || (!(lhs.first < rhs.first) && lhs.second < rhs.second));
+    };
 
-        template <typename U1, typename U2>
-        bool operator>=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return !(lhs < rhs);
-        };
+    template <typename U1, typename U2>
+    bool operator>(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return (rhs < lhs);
+    };
 
-        template <typename U1, typename U2>
-        bool operator<=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
-        {
-            return !(rhs < lhs);
-        };
+    template <typename U1, typename U2>
+    bool operator>=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return !(lhs < rhs);
+    };
 
+    template <typename U1, typename U2>
+    bool operator<=(const pair<U1, U2>& lhs, const pair<U1, U2>& rhs)
+    {
+        return !(rhs < lhs);
     };
 
     template <typename T1, typename T2>
@@ -68,3 +71,5 @@ namespace ft{
         return (pair<T1, T2>(t, u));
     };
 }
+
+#endif

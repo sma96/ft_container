@@ -2,7 +2,7 @@
 #define ITERATOR_TRAITS_HPP
 
 #include <iostream>
-
+#include "iterator.hpp"
 namespace ft{
 
     // struct input_iterator_tag  {};
