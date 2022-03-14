@@ -42,9 +42,9 @@
                 reverse_iterator& operator+=(difference_type n) const { current -= n; return (*this); }
                 reverse_iterator operator-(difference_type n) { return (reverse_iterator(current + n)); }
                 reverse_iterator& operator-=(difference_type n) const { current += n; return (*this); }
-                reverse_iterator& operator++() const { --current; return (*this); }
+                reverse_iterator& operator++() { --current; return (*this); }
                 reverse_iterator operator++(int) { reverse_iterator tmp(*this); --current; return (tmp); }
-                reverse_iterator& operator--() const { ++current; return (*this); }
+                reverse_iterator& operator--() { ++current; return (*this); }
                 reverse_iterator operator--(int) { reverse_iterator tmp(*this); ++current; return (tmp); }
                 reference operator[](difference_type n) { return (*(*this + n)); }
         };

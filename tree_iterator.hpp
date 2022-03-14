@@ -7,7 +7,7 @@
 namespace ft {
 
     template <class T, class Node>
-        class   tree_iterator : ft::iterator<std::bidirectional_iterator_tag, T>{
+        class   tree_iterator : public ft::iterator<std::bidirectional_iterator_tag, T>{
             
             public :
                 typedef typename ft::iterator_traits<T>::value_type value_type;
@@ -23,23 +23,26 @@ namespace ft {
                 node_ptr current;
                 node_ptr nil;
                 node_ptr _end;
+            
             public :
                 tree_iterator(void) : current(NULL), nil(NULL), _end(NULL) {};
                 explicit tree_iterator(const node_ptr tmp, const node_ptr _nil, const node_ptr end) : current(tmp), nil(_nil), _end(end) {};
 
                 template <class T2, class Node2>
-                    tree_iterator(const tree_iterator<T2, Node2>& x) : current(x.base), nil(x.nil), _end(x._end) {};
+                    tree_iterator(const tree_iterator<T2, Node2>& x) : current(x.base()), nil(x.nilbase()), _end(x.endbase()) {};
 
                 ~tree_iterator(void){};
 
                 node_ptr base(void) const { return (current); }
+                node_ptr nilbase(void) const { return (nil); }
+                node_ptr endbase(void) const { return (_end); }
 
                 template <class U>
                     tree_iterator&  operator=(const tree_iterator<U, Node> it)
                     {
                         current = it.base();
-                        nil = it.nil;
-                        _end = it._end;
+                        nil = it.nilbase();
+                        _end = it.endbase();
                         return (*this);
                     }
 

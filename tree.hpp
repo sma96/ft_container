@@ -64,13 +64,15 @@ namespace ft{
                     this->nil->color = BLACK;
                     this->_end = _alloc.allocate(1);
                     _alloc.construct(this->_end, value_type());
+                    this->_end->parent = this->root;
                 }
                 ~RBTree()
                 {
                     this->clear();
                     _alloc.destroy(this->nil);
                     _alloc.deallocate(this->nil, 1);
-
+                    _alloc.destroy(this->_end);
+                    _alloc.deallocate(this->_end, 1);
                 }
                 node_ptr    CreateNode(const value_type& val)
                 {
@@ -90,6 +92,11 @@ namespace ft{
                 node_ptr    GetEnd(void) const
                 {
                     return (this->_end);
+                }
+
+                allocator_type  GetAlloc(void) const
+                {
+                    return (this->_alloc);
                 }
 
                 void printnode()
@@ -117,8 +124,19 @@ namespace ft{
                     node_ptr tmp_nil = x.nil;
                     node_ptr tmp_end = x._end;
 
-                    
+                    x._size = this->_size;
+                    x._alloc = this->_alloc;
+                    x.root = this->root;
+                    x.nil = this->nil;
+                    x._end = this->_end;
+
+                    this->_size = tmp_size;
+                    this->_alloc = tmp_alloc;
+                    this->root = tmp_root;
+                    this->nil = tmp_nil;
+                    this->_end = tmp_end;
                 }
+                
                 void        clear(void)
                 {
                     if (this->root)
@@ -159,12 +177,12 @@ namespace ft{
                     inorder(node->right);
                 }
 
-                node_ptr    Search(const value_type& val)
+                node_ptr    Search(const value_type& val) const
                 {
                     return (Search(this->root, val));
                 }
 
-                node_ptr    Search(node_ptr node, const value_type& val)
+                node_ptr    Search(node_ptr node, const value_type& val) const
                 {
                     if (node == NULL)
                         return (NULL);
@@ -178,22 +196,24 @@ namespace ft{
                     return (NULL);
                 }
 
-                node_ptr    GetBegin()
+                node_ptr    GetBegin() const
                 {
+                    if (this->_size == 0)
+                        return (this->_end);
                     return (MinNode(this->root));
                 }
 
-                node_ptr MinNode(node_ptr node)
+                node_ptr MinNode(node_ptr node) const
                 {
                     if (node == NULL)
-                        return (NULL);
+                        return (this->root);
 
                     if (node->left == this->nil)
                         return (node);
                     return (MinNode(node->left));
                 }
 
-                node_ptr MaxNode(node_ptr node)
+                node_ptr MaxNode(node_ptr node) const
                 {
                     if (node == NULL)
                         return (NULL);
@@ -524,6 +544,6 @@ namespace ft{
                     }
                 }
         };
-}
+};
 
 #endif
