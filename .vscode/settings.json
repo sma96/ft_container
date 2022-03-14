@@ -63,6 +63,11 @@
         "typeinfo": "cpp",
         "unordered_map": "cpp",
         "utility": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iomanip": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "set": "cpp",
+        "stack": "cpp"
     }
 }

@@ -39,7 +39,7 @@
                 reference operator*() {iterator_type tmp = current; return (*--tmp); }
                 pointer operator->() {return ( &(this->operator*())); }
                 reverse_iterator operator+(difference_type n) { return (reverse_iterator(current - n)); }
-                reverse_iterator& operator+=(difference_type n) const { current -= n; return (*this); }
+                reverse_iterator& operator+=(difference_type n) { current -= n; return (*this); }
                 reverse_iterator operator-(difference_type n) { return (reverse_iterator(current + n)); }
                 reverse_iterator& operator-=(difference_type n) const { current += n; return (*this); }
                 reverse_iterator& operator++() { --current; return (*this); }
@@ -76,7 +76,7 @@
         template <typename iter1, typename iter2>
         bool operator>=(const reverse_iterator<iter1>& x, const reverse_iterator<iter2>& y)
         {
-            return (x.base() <= y.base);
+            return (x.base() <= y.base());
         }
 
         template <typename iter1, typename iter2>

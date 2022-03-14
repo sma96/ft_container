@@ -9,6 +9,8 @@
 #include "tree_iterator.hpp"
 #include "tree.hpp"
 #include "enable_if.hpp"
+#include "lexicographical_compare.hpp"
+#include "equal.hpp"
 
 namespace ft{
     template <class Key, class T, class Compare = std::less<Key>, class Allocator = std::allocator<ft::pair<Key, T> > >
@@ -63,27 +65,25 @@ namespace ft{
 
             public :
                 explicit map(const key_compare& comp = key_compare(), const allocator_type alloc = allocator_type()) 
-                : _tree(value_compare(comp)), _comp(comp), _alloc(alloc) {};
+                : _tree(value_compare(comp)), _alloc(alloc),_comp(comp)  {};
 
                 template <class InputIterator>
                     map(InputIterator first, InputIterator last, const key_compare comp = key_compare(), const allocator_type alloc = allocator_type(), typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
-                        : _tree(value_compare(comp)), _comp(comp), _alloc(alloc)
+                        : _tree(value_compare(comp)), _alloc(alloc), _comp(comp) 
                     {
                         this->insert(first, last);
                     }
                 
-                map(const map& x) : _tree(value_compare(x._comp)), _comp(x._comp), _alloc(x._alloc)
+                map(const map& x) : _tree(value_compare(x._comp)), _alloc(x._alloc),_comp(x._comp) 
                 {
                     *this = x;
                 }
 
                 ~map() {};
-                
+
                 map&    operator=(const map& tmp)
                 {
-                    std::cout << "befor" << std::endl;
                     this->_tree.clear();
-                    std::cout << "after" << std::endl;
                     insert(tmp.begin(), tmp.end()); 
                     return (*this);
                 }
@@ -190,6 +190,17 @@ namespace ft{
                     }
                     _tree.insert(val);
                     return (ft::make_pair<iterator, bool>(iterator(_tree.Search(val), _tree.GetNil(), _tree.GetEnd()), true));
+                }
+
+                iterator    insert(iterator position, const value_type& val)
+                {
+                    node_ptr node = _tree.Search(val);
+
+                    if (node != NULL)
+                        return (iterator(node, _tree.GetNil(), _tree.GetEnd()));
+                    (void)position;
+                    _tree.insert(val);
+                    return (iterator(_tree.Search(val), _tree.GetNil(), _tree.GetEnd()));
                 }
 
                 template <class InputIterator>
@@ -313,7 +324,7 @@ namespace ft{
         template <class Key, class T, class Compare, class Alloc>
             bool    operator==(const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs)
             {
-                return ((lhs.size == rhs.size) && ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
+                return ((lhs.size() == rhs.size()) && ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
             }
 
         template <class Key, class T, class Compare, class Alloc>

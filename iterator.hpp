@@ -42,7 +42,7 @@ namespace ft{
             my_iterator operator+(difference_type n) const { return (my_iterator(pos + n)); }
             my_iterator& operator+=(difference_type n) { pos += n; return (*this); }
             my_iterator operator-(difference_type n) const { return (my_iterator(pos - n)); }
-            my_iterator& operator-=(difference_type n) const { pos -= n; return (*this); }
+            my_iterator& operator-=(difference_type n) { pos -= n; return (*this); }
             my_iterator& operator++() { ++pos; return (*this); }
             my_iterator operator++(int) { my_iterator tmp(*this); ++pos; return (tmp); }
             my_iterator& operator--() { --pos; return (*this); }
@@ -77,7 +77,7 @@ namespace ft{
     template <typename iter1, typename iter2>
     bool operator>=(const my_iterator<iter1>& x, const my_iterator<iter2>& y)
     {
-        return (x.base() >= y.base);
+        return (x.base() >= y.base());
     }
 
     template <typename iter1, typename iter2>

@@ -52,18 +52,18 @@ namespace ft{
             };
 
             vector(void): p(nullptr), _size(0), _capacity(0) {};
-            explicit vector(const allocator_type& _alloc) : p(nullptr), _size(0), _capacity(0), alloc(_alloc) {};
-            explicit vector(size_type n) : p(nullptr), _size(n), _capacity(n * 2)
+            explicit vector(const allocator_type& _alloc) :  alloc(_alloc), p(nullptr), _size(0), _capacity(0) {};
+            explicit vector(size_type n) : p(nullptr), _size(n), _capacity(n)
             {
                 p = alloc.allocate(_size);
             }
 
-            vector(const vector& x) : p(nullptr), _size(0), _capacity(0), alloc(allocator_type())
+            vector(const vector& x) : alloc(allocator_type()), p(nullptr), _size(0), _capacity(0) 
             {
                 *this = x;
             }
 
-            vector(size_type n, const value_type& value, const allocator_type& _alloc = allocator_type()) : p(nullptr), _size(0), _capacity(0), alloc(_alloc)
+            vector(size_type n, const value_type& value, const allocator_type& _alloc = allocator_type()) : alloc(_alloc), p(nullptr), _size(0), _capacity(0) 
             {
                 if (n > 0)
                 {
@@ -83,7 +83,7 @@ namespace ft{
             template <class InputIterator>
                 vector(InputIterator first, InputIterator last, const allocator_type& _alloc = allocator_type(), 
                         typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
-                        : p(nullptr), _size(0), _capacity(0), alloc(_alloc)
+                        : alloc(_alloc), p(nullptr), _size(0), _capacity(0) 
                 {
                     this->assign(first, last);
                 }
@@ -154,7 +154,7 @@ namespace ft{
             {
                 for (size_type i = 0; i < this->_size; i++)
                 {
-                    alloc.destroy(p + i);
+                    this->alloc.destroy(p + i);
                 }
                 this->_size = 0;
             }
@@ -186,15 +186,20 @@ namespace ft{
                 {
                     pointer temp = alloc.allocate(new_cap);
                     size_type   old_size = this->_size;
+                    size_type   old_cap = this->_capacity;
+
+                    if (this->_capacity * 2 > new_cap)
+                        this->_capacity *= 2;
+                    else
+                        this->_capacity = new_cap;
                     for (size_type i = 0; i < this->_size; i++)
                     {
                         alloc.construct(temp + i, p[i]);
                     }
                     this->clear();
                     this->_size = old_size;
-                    alloc.deallocate(p, this->_capacity);
+                    alloc.deallocate(p, old_cap);
                     p = temp;
-                    this->_capacity = new_cap;
                 }
             }
 
@@ -202,8 +207,7 @@ namespace ft{
             {
                 if (count > this->_size)
                 {
-                    if (this->_capacity <= count)
-                        this->reserve(count * 2);
+                    this->reserve(count);
                     for (size_type i = this->_size; i < count; i++)
                     {
                         alloc.construct(p + i, value);
@@ -223,12 +227,15 @@ namespace ft{
             // element 추가 , 삭제
             void    push_back(const value_type& value)
             {
-                this->resize(this->_size + 1, value);
+                this->reserve(this->_size + 1);
+                alloc.construct(this->p + this->_size, value);
+                this->_size++;
             }
 
             void    pop_back()
             {
-                this->resize(this->_size - 1);
+                alloc.destroy(this->p + this->_size);
+                this->_size--;
             }
 
 
@@ -238,11 +245,12 @@ namespace ft{
                         typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
                 {
                     size_type new_size = static_cast<size_type>(std::distance(first, last));
+
                     if (new_size <= 0)
                         throw InvalidSize();
                     if (new_size <= _capacity)
                     {
-                        size_type new_capacity = new_size * 2;
+                        // size_type new_capacity = _capacity * 2;
                         this->clear();
                         for (size_type i = 0; i < new_size; i++)
                         {
@@ -250,11 +258,15 @@ namespace ft{
                             first++;
                         }
                         _size = new_size;
-                        _capacity = new_capacity;
+                        // _capacity = new_capacity;
                     }
                     else if (new_size > _capacity)
                     {
-                        size_type new_capacity = new_size * 2;
+                        size_type new_capacity;
+                        if (_capacity == 0)
+                            new_capacity = new_size;
+                        else
+                            new_capacity = _capacity * 2;
                         pointer t_iter = alloc.allocate(new_capacity);
                         this->clear();
                         alloc.deallocate(p, _capacity);
@@ -274,7 +286,7 @@ namespace ft{
             {
                 if (n <= _capacity)
                 {
-                    size_type new_capacity = n * 2;
+                    // size_type new_capacity = _capacity * 2;
                     this->clear();
                     p = alloc.allocate(_capacity);
                     for (size_type i = 0; i < n; i++)
@@ -282,12 +294,16 @@ namespace ft{
                         alloc.construct(p + i, value);
                     }
                     _size = n;
-                    _capacity = new_capacity;
+                    // _capacity = new_capacity;
                 }
                 else if (n > _capacity)
                 {
                     pointer temp;
-                    size_type new_capacity = n * 2;
+                    size_type new_capacity;
+                    if (_capacity == 0)
+                        new_capacity = n;
+                    else
+                        new_capacity = _capacity * 2;
                     temp = alloc.allocate(new_capacity);
                     this->clear();
                     alloc.deallocate(p, _capacity);
@@ -303,16 +319,16 @@ namespace ft{
 
             iterator insert(iterator pos, const value_type& value)
             {
-                size_type dist = static_cast<size_type>(std::distance(this->p, pos.base()));
-                size_type old_cap = this->_capacity;
+                size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
+                // size_type old_cap = this->_capacity;
                 size_type new_size = this->_size + 1;
 
                 if (dist < 0)
                     throw InvalidSize();
-                else if (dist > this->_size)
-                    throw OutofRange();
-                if (this->_capacity <= this->_size + 1)
+                if (this->_capacity < new_size)
+                {
                     this->reserve(this->_capacity * 2);
+                }
                 for (size_type i = new_size; i > dist; i--)
                 {
                     alloc.construct(this->p + i, p[i - 1]);
@@ -327,15 +343,18 @@ namespace ft{
             {
                 size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
 
-                 if (dist < 0)
-                    throw OutofRange();
-                else if (dist > this->_size)
+                if (dist < 0)
                     throw OutofRange();
                 if (this->_capacity <= this->_size + count)
-                    this->reserve(this->_capacity * 2);
+                {
+                    if ((this->_size * 2) < (this->_size + count))
+						this->reserve(count + this->_size);
+					else
+						this->reserve(this->_capacity * 2);
+                }
                 for (size_type i = 0; i < count; i++)
                 {
-                    this->insert(this->begin() + i, value);
+                    this->insert(this->begin() + dist + i, value);
                 }
 
             }
@@ -345,14 +364,21 @@ namespace ft{
                             typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
                 {
                     size_type dist = static_cast<size_type>(std::distance(this->begin().base(), pos.base()));
-                    size_type count = static_cast<size_type>(std::distance(first, last));
-                    
+                    size_type count = static_cast<size_type>(std::distance(first.base(), last.base()));
+
                     if (dist < 0)
                         throw OutofRange();
                     else if (dist > this->_size)
                         throw OutofRange();
                     if (this->_capacity <= this->_size + count)
-                        this->reserve(this->_capacity * 2);
+                    {
+                        if ((this->_size * 2) < (this->_size + count))
+                            this->reserve(count + this->_size);
+                        else
+                            this->reserve(this->_capacity * 2);
+                    }
+                    // if (this->_capacity < this->_size + count)
+                    //     this->reserve(this->_capacity * 2);
                     for (size_type i = 0; i < count; i++)
                     {
                         this->insert(this->begin() + dist + i, *first);
@@ -419,7 +445,7 @@ namespace ft{
 
             iterator end()
             {
-                return (iterator(this->p + this->_size));
+                return (iterator((this->p + this->_size)));
             }
 
             const iterator begin() const
@@ -429,7 +455,7 @@ namespace ft{
 
             const iterator end() const
             {
-                return (iterator(this->p + this->_size));
+                return (iterator((this->p + this->_size)));
             }
 
             const_iterator cbegin() const
@@ -477,7 +503,7 @@ namespace ft{
     template <class T, class Alloc>
         bool operator>(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
         {
-            return (rhs < lhs);
+            return (ft::lexicographical_compare(rhs.begin(), rhs.end(), lhs.begin(), lhs.end()));
         }
     template <class T, class Alloc>
         bool operator!=(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)

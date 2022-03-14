@@ -20,7 +20,7 @@ namespace ft{
 
             bool color;
 
-            Node() : data(0), parent(NULL), left(NULL), right(NULL), color(BLACK) {};
+            Node() : data(NULL), parent(NULL), left(NULL), right(NULL), color(BLACK) {};
             Node(const Node& tmp) : data(tmp.data), parent(tmp.parent), left(tmp.left), right(tmp.right), color(tmp.color) {};
             Node(T const& _data, Node* _parent = NULL, Node* _left = NULL, Node* _right = NULL, bool _color = RED) : data(_data), parent(_parent), left(_left), right(_right), color(_color) {};
         
@@ -57,7 +57,7 @@ namespace ft{
                 size_type       _size;
 
             public :
-                RBTree(const value_compare& comp = value_compare()) : root(NULL), _end(NULL), _comp(comp), _size(0), _alloc(allocator_type()) 
+                RBTree(const value_compare& comp = value_compare()) : root(NULL), _end(NULL), _alloc(allocator_type()), _comp(comp), _size(0) 
                 {
                     this->nil = _alloc.allocate(1);
                     _alloc.construct(this->nil, value_type());
@@ -102,18 +102,18 @@ namespace ft{
                 void printnode()
                 {
                     // std::cout << "size = " << this->root << std::endl;
-                    // inorder(this->root);
+                    inorder(this->root);
                     // cout << "hellof" << endl;
-                    cout << this->root->left->left->data.first << endl;
-                    cout << this->root->left->data.first << endl;
-                    cout << this->root->left->right->data.first << endl;
-                    cout << this->root->data.first << endl;
-                    cout << this->root->right->left->data.first << endl;
-                    cout << this->root->right->data.first << endl;
-                    cout << this->root->right->right->left->data.first << endl;
-                    cout << this->root->right->right->data.first << endl;
-                    cout << this->root->right->right->right->data.first << endl;
-                    cout << this->root->right->right->right->right->data.first << endl;
+                    // cout << this->root->left->left->data.first << endl;
+                    // cout << this->root->left->data.first << endl;
+                    // cout << this->root->left->right->data.first << endl;
+                    // cout << this->root->data.first << endl;
+                    // cout << this->root->right->left->data.first << endl;
+                    // cout << this->root->right->data.first << endl;
+                    // cout << this->root->right->right->left->data.first << endl;
+                    // cout << this->root->right->right->data.first << endl;
+                    // cout << this->root->right->right->right->data.first << endl;
+                    // cout << this->root->right->right->right->right->data.first << endl;
                 }
 
                 void        swap(RBTree& x)
@@ -173,7 +173,7 @@ namespace ft{
                     if (node == this->nil || node == NULL)
                         return ;
                     inorder(node->left);
-                    // std::cout << node->data.first << std::endl;
+                    std::cout << node->color << std::endl;
                     inorder(node->right);
                 }
 
@@ -184,7 +184,7 @@ namespace ft{
 
                 node_ptr    Search(node_ptr node, const value_type& val) const
                 {
-                    if (node == NULL)
+                    if (node == NULL || node == this->nil)
                         return (NULL);
 
                     if (node->data.first == val.first)
@@ -206,7 +206,7 @@ namespace ft{
                 node_ptr MinNode(node_ptr node) const
                 {
                     if (node == NULL)
-                        return (this->root);
+                        return (NULL);
 
                     if (node->left == this->nil)
                         return (node);
@@ -477,12 +477,12 @@ namespace ft{
                     if (target == NULL)
                         return ;
                     DeleteNode(target);
-                    if (this->root->right != this->nil)
+                    if (this->_size == 0)
+                        this->root = NULL;
+                    if (this->root && this->root->right != this->nil)
                         this->_end->parent = MaxNode(this->root->right);
                     else
                         this->_end->parent = this->root;
-                    if (this->_size == 0)
-                        this->root = NULL;
                 }
 
                 void        DeleteNode(node_ptr target)
@@ -492,6 +492,13 @@ namespace ft{
 
                     if (target->left == this->nil && target->right == this->nil)
                     {
+                        if (target == this->root && this->_size == 1)
+                        {
+                            _alloc.destroy(target);
+                            _alloc.deallocate(target, 1);
+                            this->_size = 0;
+                            return ;
+                        }
                         if (isLeft == true)
                             target->parent->left = this->nil;
                         else if (isLeft == false)
@@ -527,6 +534,8 @@ namespace ft{
                         }
                         if (target_color == BLACK && replace_node->color == RED)
                             replace_node->color = BLACK;
+                        if (target == this->root)
+                            this->root = replace_node;
                         _alloc.destroy(target);
                         _alloc.deallocate(target, 1);
                         this->_size -= 1;
