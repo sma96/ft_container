@@ -184,7 +184,6 @@ namespace ft{
             {
                 if (new_cap > this->_capacity)
                 {
-                    pointer temp = alloc.allocate(new_cap);
                     size_type   old_size = this->_size;
                     size_type   old_cap = this->_capacity;
 
@@ -192,6 +191,7 @@ namespace ft{
                         this->_capacity *= 2;
                     else
                         this->_capacity = new_cap;
+                    pointer temp = alloc.allocate(this->_capacity);
                     for (size_type i = 0; i < this->_size; i++)
                     {
                         alloc.construct(temp + i, p[i]);
@@ -228,7 +228,7 @@ namespace ft{
             void    push_back(const value_type& value)
             {
                 this->reserve(this->_size + 1);
-                alloc.construct(this->p + this->_size, value);
+                alloc.construct(&this->p[this->_size], value);
                 this->_size++;
             }
 
@@ -250,7 +250,6 @@ namespace ft{
                         throw InvalidSize();
                     if (new_size <= _capacity)
                     {
-                        // size_type new_capacity = _capacity * 2;
                         this->clear();
                         for (size_type i = 0; i < new_size; i++)
                         {
@@ -258,7 +257,6 @@ namespace ft{
                             first++;
                         }
                         _size = new_size;
-                        // _capacity = new_capacity;
                     }
                     else if (new_size > _capacity)
                     {
@@ -377,8 +375,6 @@ namespace ft{
                         else
                             this->reserve(this->_capacity * 2);
                     }
-                    // if (this->_capacity < this->_size + count)
-                    //     this->reserve(this->_capacity * 2);
                     for (size_type i = 0; i < count; i++)
                     {
                         this->insert(this->begin() + dist + i, *first);
@@ -497,7 +493,7 @@ namespace ft{
     template <class T, class Alloc>
         bool operator<(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs)
         {
-            return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), lhs.end()));
+            return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
         }
 
     template <class T, class Alloc>

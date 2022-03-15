@@ -101,19 +101,7 @@ namespace ft{
 
                 void printnode()
                 {
-                    // std::cout << "size = " << this->root << std::endl;
                     inorder(this->root);
-                    // cout << "hellof" << endl;
-                    // cout << this->root->left->left->data.first << endl;
-                    // cout << this->root->left->data.first << endl;
-                    // cout << this->root->left->right->data.first << endl;
-                    // cout << this->root->data.first << endl;
-                    // cout << this->root->right->left->data.first << endl;
-                    // cout << this->root->right->data.first << endl;
-                    // cout << this->root->right->right->left->data.first << endl;
-                    // cout << this->root->right->right->data.first << endl;
-                    // cout << this->root->right->right->right->data.first << endl;
-                    // cout << this->root->right->right->right->right->data.first << endl;
                 }
 
                 void        swap(RBTree& x)
@@ -297,12 +285,6 @@ namespace ft{
                     }
                     else
                     {
-                        if (Search(val))
-                        {
-                            _alloc.destroy(newnode);
-                            _alloc.deallocate(newnode, 1);
-                            return ;
-                        }      
                         insert(newnode);
                         newnode->left = this->nil;
                         newnode->right = this->nil;
